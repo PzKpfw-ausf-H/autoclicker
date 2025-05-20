@@ -173,12 +173,50 @@ namespace AutoClickerApp
             }
         }
 
+        /// <summary>
+        /// Метод для удаления всех кнопок со второй страницы
+        /// </summary>
+        private void GenerateResetAllButton()
+        {
+            Button resetAllButton = new Button();
+            resetAllButton.Text = "Сбросить все";
+            resetAllButton.Size = new Size(120, 30);
+            resetAllButton.ForeColor = Color.Black;
+            resetAllButton.BackColor = Color.White;
+            resetAllButton.Location = new Point(flpKeySettings.Width - 140, flpKeySettings.Height - 40);
+            resetAllButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right; 
+
+            flpKeySettings.Controls.Add(resetAllButton);
+
+            resetAllButton.Click += (s, e) =>
+            {
+                //удаляем карточки
+                flpKeySettings.Controls.Clear();
+
+                //сбрасываем выделения кнопок
+                foreach (var btn in simulatedKeys)
+                {
+                    btn.BackColor = Color.White;
+                }
+
+                selectedKeys.Clear();
+
+                behaviorPageInitialized = false;
+            };
+        }
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)     // метод-обработчик, запускается когда форма создается и начинает загружаться, но еще не видна пользователю
+
+        /// <summary>
+        /// метод-обработчик, запускается когда форма создается и начинает загружаться, но еще не видна пользователю
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form1_Load(object sender, EventArgs e)
         {
             GenerateKeyboard();
             GenerateMouseBlock();
@@ -308,7 +346,7 @@ namespace AutoClickerApp
                 {
                     CreateKeySettingCard(key);
                 }
-
+                GenerateResetAllButton();
                 behaviorPageInitialized = true;
             }
         }
