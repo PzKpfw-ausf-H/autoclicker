@@ -1,10 +1,20 @@
+using WindowsInput;
+using WindowsInput.Native;
+
 namespace AutoClickerApp
 {
     public partial class Form1 : Form
     {
         private List<Button> simulatedKeys = new List<Button>();    // создаем список дл€ генерации клавиш
         private List<string> selectedKeys = new List<string>();     // список дл€ хранени€ выбранных пользователем клавиш
+        private List<KeyBehavior> currentBehaviors = new List<KeyBehavior>();
+
+
         private bool behaviorPageInitialized = false;
+
+        private InputSimulator inputSimulator = new InputSimulator();
+
+        private bool autoclickerRunning = false;
 
         private List<KeyLayout> keyboardLayout = new List<KeyLayout>
         /*
@@ -35,6 +45,156 @@ namespace AutoClickerApp
             {"Fn", 60},
             {"Del", 60}
         };
+
+        public Form1()
+        {
+            InitializeComponent();
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown;
+        }
+
+        /// <summary>
+        /// ћетод, который запускает автокликер по нажатии F6
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F6)
+            {
+                ToggleAutoclicker();
+            }
+        }
+
+        /// <summary>
+        /// ћетод, описывающий разное поведение автокликера в зависимости от:
+        /// запущен кликер или нет;
+        /// способ кликани€ (одиночный, цикл или удержание)
+        /// </summary>
+        private void ToggleAutoclicker()
+        {
+            UpdateCurrentBehaviors();
+
+            if (autoclickerRunning)
+            {
+                autoclickerRunning = false;
+                MessageBox.Show("јвтокликер остановлен");
+                return;
+            }
+
+            autoclickerRunning = true;
+            MessageBox.Show("јвтокликер запущен");
+
+            foreach(var behavior in currentBehaviors)
+            {
+                string key = behavior.KeyName;
+                string mode = behavior.Mode;
+                int interval = behavior.IntervalMs;
+
+                if (mode == "ќдиночное")
+                {
+                    SimulateKeyPress(key);
+                }
+                else if (mode == "÷икл")
+                {
+                    Task.Run(() =>
+                    {
+                        while (autoclickerRunning)
+                        {
+                            SimulateKeyPress(key);
+                            Thread.Sleep(interval);
+                        }
+                    });
+                }
+                else if (mode == "”держание")
+                {
+                    HoldKeyDown(key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// ћетод, симулирующий один клик клавиши
+        /// </summary>
+        /// <param name="key"></param>
+        private void SimulateKeyPress(string key)
+        {
+            if (TryGetVirtualKey(key, out VirtualKeyCode code))
+            {
+                inputSimulator.Keyboard.KeyPress(code);
+            }
+        }
+
+        /// <summary>
+        /// ћетод, симулирующий удержание клавиши
+        /// </summary>
+        /// <param name="key"></param>
+        private void HoldKeyDown(string key)
+        {
+            if (TryGetVirtualKey(key, out VirtualKeyCode code))
+            {
+                inputSimulator.Keyboard.KeyDown(code);
+            }
+        }
+
+        /// <summary>
+        /// ћетод дл€ получени€ нажатой клавиши:
+        /// обычные клавиши обабатываютс€ в Enum.TryPase...
+        /// специальные клавиши обрабатываютс€ в switch-case
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        private bool TryGetVirtualKey(string key, out VirtualKeyCode code)
+        {
+            key = key.ToUpper();
+
+            if (Enum.TryParse("VK_" + key, out code)) return true;
+
+            switch (key)
+            {
+                case "LMB": code = VirtualKeyCode.LBUTTON; return true;
+                case "RMB": code = VirtualKeyCode.RBUTTON; return true;
+                case "MMB": code = VirtualKeyCode.MBUTTON; return true;
+                case "SPACE": code = VirtualKeyCode.SPACE; return true;
+                case "ENTER": code = VirtualKeyCode.RETURN; return true;
+                case "SHIFT": code = VirtualKeyCode.SHIFT; return true;
+                case "CTRL": code = VirtualKeyCode.CONTROL; return true;
+                case "TAB": code = VirtualKeyCode.TAB; return true;
+                case "BACKSPACE": code = VirtualKeyCode.BACK; return true;
+                case "CAPS": code = VirtualKeyCode.CAPITAL; return true;
+
+                default: code = 0; return false;
+            }
+        }
+
+        private void UpdateCurrentBehaviors()
+        {
+            currentBehaviors.Clear();
+
+            foreach (Control control in flpKeySettings.Controls)
+            {
+                if (control is Panel card)
+                {
+                    string key = card.Controls.OfType<Button>().First().Text;
+                    string mode = card.Controls.OfType<ComboBox>().First().SelectedItem.ToString();
+                    int interval = 0;
+
+                    var numeric = card.Controls.OfType<NumericUpDown>().FirstOrDefault();
+                    if (mode == "÷икл" && numeric != null)
+                    {
+                        interval = (int)numeric.Value;
+                    }
+
+                    currentBehaviors.Add(new KeyBehavior
+                    {
+                        KeyName = key,
+                        Mode = mode,
+                        IntervalMs = interval,
+                    });
+                }
+            }
+        }
 
         /// <summary>
         /// ¬спомогательный метод дл€ создани€ небольшой инструкции сверху в главной страничке
@@ -174,6 +334,51 @@ namespace AutoClickerApp
         }
 
         /// <summary>
+        /// ћетод, создающий кнопку сохранени€ настроек дл€ кнопок и описывающий эту самую логику сохранени€ настроек
+        /// </summary>
+        private void GenerateApplyButton()
+        {
+            Button applyButton = new Button();
+            applyButton.Text = "ѕрименить";
+            applyButton.ForeColor = Color.Black;
+            applyButton.BackColor = Color.White;
+            applyButton.Size = new Size(120, 30);
+            applyButton.Location = new Point(10, flpKeySettings.Height - 40);
+            applyButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            flpKeySettings.Controls.Add(applyButton);
+
+            applyButton.Click += (s, e) =>
+            {
+                currentBehaviors.Clear();
+
+                foreach (Control control in flpKeySettings.Controls)
+                {
+                    if (control is Panel card)
+                    {
+                        string key = card.Controls.OfType<Button>().First().Text;
+                        string mode = card.Controls.OfType<ComboBox>().First().SelectedItem.ToString();
+                        int interval = 0;
+
+                        var numeric = card.Controls.OfType<NumericUpDown>().FirstOrDefault();
+                        if (mode == "÷икл" && numeric != null)
+                        {
+                            interval = (int)numeric.Value;
+                        }
+                        currentBehaviors.Add(new KeyBehavior
+                        {
+                            KeyName = key,
+                            Mode = mode,
+                            IntervalMs = interval,
+                        });
+                    }
+                }
+
+                MessageBox.Show("Ќастройки сохранены", "ѕрименено", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+        }
+
+        /// <summary>
         /// ћетод дл€ удалени€ всех кнопок со второй страницы
         /// </summary>
         private void GenerateResetAllButton()
@@ -203,11 +408,6 @@ namespace AutoClickerApp
 
                 behaviorPageInitialized = false;
             };
-        }
-
-        public Form1()
-        {
-            InitializeComponent();
         }
 
 
@@ -347,6 +547,7 @@ namespace AutoClickerApp
                     CreateKeySettingCard(key);
                 }
                 GenerateResetAllButton();
+                GenerateApplyButton();
                 behaviorPageInitialized = true;
             }
         }
@@ -373,5 +574,12 @@ namespace AutoClickerApp
             Keys = keys;
             XOffset = xOffset;
         }
+    }
+
+    public class KeyBehavior
+    {
+        public string KeyName { get; set; }
+        public string Mode { get; set; }
+        public int IntervalMs { get; set; }
     }
 }
