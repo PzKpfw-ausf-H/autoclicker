@@ -28,7 +28,42 @@
         /// </summary>
         private void InitializeComponent()
         {
+            tabControl1 = new TabControl();
+            tabPage1 = new TabPage();
+            tabPage2 = new TabPage();
+            tabControl1.SuspendLayout();
             SuspendLayout();
+            // 
+            // tabControl1
+            // 
+            tabControl1.Controls.Add(tabPage1);
+            tabControl1.Controls.Add(tabPage2);
+            tabControl1.Location = new Point(0, 0);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new Size(985, 561);
+            tabControl1.TabIndex = 0;
+            // 
+            // tabPage1
+            // 
+            tabPage1.BackColor = Color.Gray;
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(977, 533);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "Keys";
+            tabPage1.Click += tabPage1_Click;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Location = new Point(4, 24);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(977, 533);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "Behavior";
+            tabPage2.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -36,15 +71,21 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Gray;
             ClientSize = new Size(984, 561);
+            Controls.Add(tabControl1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MinimizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "AutoClicker";
             Load += Form1_Load;
+            tabControl1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
+
+        private TabControl tabControl1;
+        private TabPage tabPage1;
+        private TabPage tabPage2;
     }
 }

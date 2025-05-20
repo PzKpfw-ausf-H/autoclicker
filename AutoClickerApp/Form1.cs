@@ -47,7 +47,7 @@ namespace AutoClickerApp
             instructionLabel.Size = new Size(800, 30);
             instructionLabel.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             instructionLabel.ForeColor = Color.White;
-            this.Controls.Add(instructionLabel);
+            tabPage1.Controls.Add(instructionLabel);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace AutoClickerApp
             grpKeyboard.Location = new Point(20, 150);
             grpKeyboard.Size = new Size(710, 250);
 
-            this.Controls.Add(grpKeyboard);
+            tabPage1.Controls.Add(grpKeyboard);
 
             //ќстальной код
             int startX = 10;
@@ -119,7 +119,7 @@ namespace AutoClickerApp
             grpMouse.Size = new Size(220, 170);
             grpMouse.Padding = new Padding(10);
 
-            this.Controls.Add(grpMouse);
+            tabPage1.Controls.Add(grpMouse);
 
             int baseX = 10;
             int baseY = 20;
@@ -197,6 +197,11 @@ namespace AutoClickerApp
                 clickedButton.BackColor = ColorTranslator.FromHtml("#76F076");
                 MessageBox.Show($" лавиша {clickedButton.Text} выбрана дл€ симул€ции!");
             }
+        }
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
