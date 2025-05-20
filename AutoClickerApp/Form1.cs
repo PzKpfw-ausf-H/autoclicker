@@ -2,7 +2,9 @@ namespace AutoClickerApp
 {
     public partial class Form1 : Form
     {
-        private List<Button> simulatedKeys = new List<Button>();    // создаем список для генерации остальных клавиш программно
+        private List<Button> simulatedKeys = new List<Button>();    // создаем список для генерации клавиш
+        private List<string> selectedKeys = new List<string>();     // список для хранения выбранных пользователем клавиш
+        private bool behaviorPageInitialized = false;
 
         private List<KeyLayout> keyboardLayout = new List<KeyLayout>
         /*
@@ -194,11 +196,27 @@ namespace AutoClickerApp
 
             if (clickedButton != null)
             {
-                clickedButton.BackColor = ColorTranslator.FromHtml("#76F076");
-                MessageBox.Show($"Клавиша {clickedButton.Text} выбрана для симуляции!");
+                string key = clickedButton.Text;
+
+                if (selectedKeys.Contains(key))
+                {
+                    selectedKeys.Remove(key);
+                    clickedButton.BackColor = Color.White;
+                }
+                else
+                {
+                    selectedKeys.Add(key);
+                    clickedButton.BackColor = ColorTranslator.FromHtml("#76F076");
+                }
             }
         }
 
+        /// <summary>
+        /// Метод для создания карточек для каждой клавиши с индивидуальынми настройками
+        /// Имеется логика удаления кнопок из списка
+        /// Также имеется логика появления интервала только при выбранном режиме "интервал"
+        /// </summary>
+        /// <param name="keyName"></param>
         private void CreateKeySettingCard(string keyName)
         {
             Panel card = new Panel();
@@ -258,7 +276,13 @@ namespace AutoClickerApp
             removeButton.Click += (s, e) =>
             {
                 flpKeySettings.Controls.Remove(card);
-                simulatedKeys.RemoveAll(b => b.Text == keyName);
+                selectedKeys.Remove(keyName);
+
+                var buttonToReset = simulatedKeys.FirstOrDefault(b => b.Text == keyName);
+                if (buttonToReset != null)
+                {
+                    buttonToReset.BackColor = Color.White;
+                }
             };
 
             //Запихиваем все в карточку
@@ -271,12 +295,21 @@ namespace AutoClickerApp
             flpKeySettings.Controls.Add(card);
         }
 
+        /// <summary>
+        /// Метод-обработчик перехода с одной страницы на другую
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (tabControl1.SelectedTab == tabPage2)
+            if (tabControl1.SelectedTab == tabPage2 && !behaviorPageInitialized)
             {
-                CreateKeySettingCard("W");
-                CreateKeySettingCard("LMB");
+                foreach (string key in selectedKeys)
+                {
+                    CreateKeySettingCard(key);
+                }
+
+                behaviorPageInitialized = true;
             }
         }
     }
