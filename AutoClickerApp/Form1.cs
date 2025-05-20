@@ -199,9 +199,85 @@ namespace AutoClickerApp
             }
         }
 
-        private void tabPage1_Click(object sender, EventArgs e)
+        private void CreateKeySettingCard(string keyName)
         {
+            Panel card = new Panel();
+            card.Width = 650;
+            card.Height = 60;
+            card.Margin = new Padding(10);
+            card.BackColor = Color.LightGray;
 
+            Button keyButton = new Button();
+            keyButton.Text = keyName;
+            keyButton.Enabled = false;
+            keyButton.BackColor = Color.White;
+            keyButton.ForeColor = Color.Black;
+            keyButton.Width = 60;
+            keyButton.Height = 40;
+            keyButton.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            keyButton.Location = new Point(10, 10);
+
+            //Комбо-бокс с выбором поведения для каждой клавиши
+            ComboBox behaviorBox = new ComboBox();
+            behaviorBox.Items.AddRange(new[] { "Одиночное", "Цикл", "Удержание" });
+            behaviorBox.SelectedIndex = 0;
+            behaviorBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            behaviorBox.Location = new Point(90, 18);
+            behaviorBox.Width = 120;
+
+            //Поле для интервала
+            NumericUpDown intervalBox = new NumericUpDown();
+            intervalBox.Minimum = 1;
+            intervalBox.Maximum = 10000;
+            intervalBox.Value = 1000;
+            intervalBox.Location = new Point(220, 18);
+            intervalBox.Width = 80;
+            intervalBox.Visible = false; //скрыт по умолчанию
+
+            // подпись "мс"
+            Label msLabel = new Label();
+            msLabel.Text = "мс";
+            msLabel.Location = new Point(305, 21);
+            msLabel.Width = 30;
+            msLabel.Visible = false;
+
+            //Кнопка для удаления клавиши из списка
+            Button removeButton = new Button();
+            removeButton.Text = "Удалить";
+            removeButton.Location = new Point(350, 17);
+            removeButton.Width = 80;
+
+            //Логика отображения интервала только для режима "цикл"
+            behaviorBox.SelectedIndexChanged += (s, e) =>
+            {
+                bool showInteval = behaviorBox.SelectedItem.ToString() == "Цикл";
+                intervalBox.Visible = showInteval;
+                msLabel.Visible = showInteval;
+            };
+
+            removeButton.Click += (s, e) =>
+            {
+                flpKeySettings.Controls.Remove(card);
+                simulatedKeys.RemoveAll(b => b.Text == keyName);
+            };
+
+            //Запихиваем все в карточку
+            card.Controls.Add(keyButton);
+            card.Controls.Add(behaviorBox);
+            card.Controls.Add(intervalBox);
+            card.Controls.Add(msLabel);
+            card.Controls.Add(removeButton);
+
+            flpKeySettings.Controls.Add(card);
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControl1.SelectedTab == tabPage2)
+            {
+                CreateKeySettingCard("W");
+                CreateKeySettingCard("LMB");
+            }
         }
     }
 
