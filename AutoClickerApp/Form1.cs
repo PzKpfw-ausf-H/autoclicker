@@ -240,7 +240,7 @@ namespace AutoClickerApp
                 rowPanel.FlowDirection = FlowDirection.LeftToRight;
                 rowPanel.Margin = new Padding(rowData.XOffset, 5, 0, 0);
 
-                foreach(string key in rowData.Keys)
+                foreach (string key in rowData.Keys)
                 {
                     Button btn = new Button();
                     btn.Text = key;
