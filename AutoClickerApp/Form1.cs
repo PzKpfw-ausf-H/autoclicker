@@ -287,6 +287,7 @@ namespace AutoClickerApp
             mousePanel.AutoSize = true;
             mousePanel.FlowDirection = FlowDirection.LeftToRight;
 
+
             FlowLayoutPanel topRow = new FlowLayoutPanel();
             topRow.AutoSize = true;
             string[] topKeys = { "LMB", "MMB", "RMB" };
