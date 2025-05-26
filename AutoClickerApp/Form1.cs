@@ -12,6 +12,8 @@ namespace AutoClickerApp
 
         private bool behaviorPageInitialized = false;
 
+        private Panel bottomButtonsPanel = null;
+
         private InputSimulator inputSimulator = new InputSimulator();
 
         private bool autoclickerRunning = false;
@@ -362,10 +364,17 @@ namespace AutoClickerApp
         /// </summary>
         private void GenerateApplyAndResetButtons()
         {
-            Panel bottomButtonsPanel = new Panel
+            if (bottomButtonsPanel != null)
+            {
+                return;
+            }
+
+
+            bottomButtonsPanel = new Panel
             {
                 Size = new Size(700, 60),
-                Dock = DockStyle.Bottom
+                Dock = DockStyle.Bottom,
+                Name = "BottomButtonsPanel"
             };
 
             Button applyButton = new Button
@@ -403,34 +412,32 @@ namespace AutoClickerApp
                     }
                 }
             };
+            Button resetButton = new Button
+            {
+                Text = "Reset all",
+                Size = new Size(120, 45),
+                Location = new Point(570, 5),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                ForeColor = Color.Black,
+                BackColor = Color.White
+            };
+            resetButton.Click += (s, e) =>
+            {
+                flpKeySettings.Controls.Clear();
 
-
-                Button resetButton = new Button
+                foreach (var btn in simulatedKeys)
                 {
-                    Text = "Reset all",
-                    Size = new Size(120, 45),
-                    Location = new Point(570, 5),
-                    Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                    ForeColor = Color.Black,
-                    BackColor = Color.White
-                };
-                resetButton.Click += (s, e) =>
-                {
-                    flpKeySettings.Controls.Clear();
+                    btn.BackColor = Color.White;
+                }
 
-                    foreach (var btn in simulatedKeys)
-                    {
-                        btn.BackColor = Color.White;
-                    }
+                selectedKeys.Clear();
 
-                    selectedKeys.Clear();
+                behaviorPageInitialized = false;
+            };
 
-                    behaviorPageInitialized = false;
-                };
-
-                bottomButtonsPanel.Controls.Add(applyButton);
-                bottomButtonsPanel.Controls.Add(resetButton);
-                tabPage2.Controls.Add(bottomButtonsPanel);
+            bottomButtonsPanel.Controls.Add(applyButton);
+            bottomButtonsPanel.Controls.Add(resetButton);
+            tabPage2.Controls.Add(bottomButtonsPanel);
         }
 
 
