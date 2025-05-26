@@ -202,7 +202,7 @@ namespace AutoClickerApp
         private void GenerateInstruction()
         {
             int startX = 20;
-            int startY = 70;
+            int startY = 20;
             Label instructionLabel = new Label();
             instructionLabel.Text = "Pick one or more keys you want to simulate";
             instructionLabel.Location = new Point(startX, startY);
@@ -213,100 +213,130 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод для генерации нативно понятной пользователю клавиатуры
-        /// Использует словарь спецклавиш выше для создания корректных отступов
+        /// Метод, создающий нативно понятную адаптивную разметку как для мыши, так и для клавиатуры
+        /// Для достижения адаптива все помещается в FlowLayoutPanel, которой задаются необходимые параметры вроде
+        /// AutoSize, Padding, Margin, WrapContents и прочие. Для достижения размещения горизонтально,
+        /// блоки мышки и клавиатуры были помещены в один контейнер
         /// </summary>
-        private void GenerateKeyboard()
+        private void GenerateKeyboardAndMouse()
         {
-            GroupBox grpKeyboard = new GroupBox();
-            grpKeyboard.Text = "Keyboard";
-            grpKeyboard.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            grpKeyboard.ForeColor = Color.White;
-            grpKeyboard.BackColor = this.BackColor;
-            grpKeyboard.Dock = DockStyle.Top;
-            grpKeyboard.Padding = new Padding(10);
-            grpKeyboard.AutoSize = true;
+            FlowLayoutPanel horizontalPanel = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                WrapContents = false,
+                Location = new Point(0, 150)
+            };
 
-            FlowLayoutPanel mainKeyboardPanel = new FlowLayoutPanel();
-            mainKeyboardPanel.Dock = DockStyle.Fill;
-            mainKeyboardPanel.FlowDirection = FlowDirection.TopDown;
-            mainKeyboardPanel.AutoSize = true;
-            mainKeyboardPanel.WrapContents = false;
+            // === БЛОК КЛАВИАТУРЫ ===
+            GroupBox grpKeyboard = new GroupBox
+            {
+                Text = "Keyboard",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = this.BackColor,
+                
+                MinimumSize = new Size(800, 325),
+                Padding = new Padding(100)
+            };
+
+            FlowLayoutPanel keyboardPanel = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                Size = new Size(760, 280),
+                Location = new Point(10, 30),
+                Margin = new Padding(10),
+                BackColor = this.BackColor
+            };
 
             foreach (var rowData in keyboardLayout)
             {
-                FlowLayoutPanel rowPanel = new FlowLayoutPanel();
-                rowPanel.AutoSize = true;
-                rowPanel.FlowDirection = FlowDirection.LeftToRight;
-                rowPanel.Margin = new Padding(rowData.XOffset, 5, 0, 0);
-
-                foreach (string key in rowData.Keys)
+                FlowLayoutPanel rowPanel = new FlowLayoutPanel
                 {
-                    Button btn = new Button();
-                    btn.Text = key;
-                    btn.Name = "btn" + key;
-                    btn.Height = 40;
-                    btn.Width = specialWidths.ContainsKey(key) ? specialWidths[key] : 40;
-                    btn.BackColor = Color.White;
-                    btn.ForeColor = Color.Black;
-                    btn.Click += KeyButton_Click;
+                    FlowDirection = FlowDirection.LeftToRight,
+                    Margin = new Padding(rowData.XOffset, 5, 0, 0),
+                    Location = new Point(0, 0),
+                    Width = 700,
+                    Height = 50,
+                };
 
-                    btn.FlatStyle = FlatStyle.Flat;
+                foreach (var key in rowData.Keys)
+                {
+                    Button btn = new Button
+                    {
+                        Text = key,
+                        Name = "btn" + key,
+                        Height = 40,
+                        Width = specialWidths.ContainsKey(key) ? specialWidths[key] : 40,
+                        BackColor = Color.White,
+                        ForeColor = Color.Black,
+                        Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                        FlatStyle = FlatStyle.Flat
+                    };
                     btn.FlatAppearance.BorderSize = 1;
                     btn.FlatAppearance.BorderColor = Color.Gray;
-                    btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+                    btn.Click += KeyButton_Click;
 
                     rowPanel.Controls.Add(btn);
                     simulatedKeys.Add(btn);
                 }
 
-                mainKeyboardPanel.Controls.Add(rowPanel);
+                keyboardPanel.Controls.Add(rowPanel);
             }
 
-            grpKeyboard.Controls.Add(mainKeyboardPanel);
-            tabPage1.Controls.Add(grpKeyboard);
-        }
-        /// <summary>
-        /// Вспомогательный метод для генерации блока с мышкой и всеми ее кнопками
-        /// Тк нет спец символов используются два массива и два цикла для прохода по ним
-        /// </summary>
-        private void GenerateMouseBlock()
-        {
-            //Создаем рамку для визуального отделения блоков клавиатуры и мышки
-            GroupBox grpMouse = new GroupBox();
-            grpMouse.Text = "Mouse";
-            grpMouse.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            grpMouse.ForeColor = Color.White;
-            grpMouse.BackColor = this.BackColor;
-            grpMouse.Dock = DockStyle.Top;
-            grpMouse.Padding = new Padding(10);
-            grpMouse.AutoSize = true;
+            grpKeyboard.Controls.Add(keyboardPanel);
+            horizontalPanel.Controls.Add(grpKeyboard);
 
-            FlowLayoutPanel mousePanel = new FlowLayoutPanel();
-            mousePanel.Dock = DockStyle.Fill;
-            mousePanel.AutoSize = true;
-            mousePanel.FlowDirection = FlowDirection.LeftToRight;
-
-            FlowLayoutPanel topRow = new FlowLayoutPanel();
-            topRow.AutoSize = true;
-            string[] topKeys = { "LMB", "MMB", "RMB" };
-            foreach (string key in topKeys)
+            // === БЛОК МЫШКИ ===
+            GroupBox grpMouse = new GroupBox
             {
-                mousePanel.Controls.Add(CreateMouseButton(key));
-            }
+                Text = "Mouse",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = this.BackColor,
+                Size = new Size(230, 200),
+                Margin = Padding.Empty
+            };
 
-            FlowLayoutPanel bottomRow = new FlowLayoutPanel();
-            bottomRow.AutoSize = true;
-            string[] bottomKeys = { "X1", "X2" };
-            foreach (string key in bottomKeys)
+            Panel mousePanel = new Panel
             {
-                mousePanel.Controls.Add(CreateMouseButton(key));
-            }
+                Size = new Size(220, 160),
+                Location = new Point(5, 30),
+                BackColor = this.BackColor,
+            };
 
+            string[] topMouse = { "LMB", "MMB", "RMB" };
+            FlowLayoutPanel topRow = new FlowLayoutPanel
+            {
+                Width = 200,
+                Height = 75,
+                Location = new Point(5, 30),
+                BackColor = this.BackColor,
+            };
+            foreach (var key in topMouse) topRow.Controls.Add(CreateMouseButton(key));
+
+            string[] bottomBar = { "X1", "X2" };
+            FlowLayoutPanel bottomRow = new FlowLayoutPanel
+            {
+                Width = 200,
+                Height = 75,
+                Location = new Point(5, 100),
+                BackColor = this.BackColor
+            };
+            foreach(var key in bottomBar) bottomRow.Controls.Add(CreateMouseButton(key));
+
+            mousePanel.Controls.Add(topRow);
+            mousePanel.Controls.Add(bottomRow);
             grpMouse.Controls.Add(mousePanel);
-            tabPage1.Controls.Add(grpMouse);
 
+            horizontalPanel.Controls.Add(grpMouse);
+
+            // === Добавляем весь блок ===
+            tabPage1.Controls.Add(horizontalPanel);
         }
+
+
 
         private Button CreateMouseButton(string key)
         {
@@ -321,7 +351,7 @@ namespace AutoClickerApp
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 1;
             btn.FlatAppearance.BorderColor = Color.Gray;
-            btn.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            btn.Font = new Font("Segoe UI", 9, FontStyle.Regular);
 
             simulatedKeys.Add(btn);
             return btn;
@@ -412,8 +442,7 @@ namespace AutoClickerApp
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
-            GenerateKeyboard();
-            GenerateMouseBlock();
+            GenerateKeyboardAndMouse();
             GenerateInstruction();
         }
 
