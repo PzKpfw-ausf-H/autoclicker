@@ -236,7 +236,7 @@ namespace AutoClickerApp
                 ForeColor = Color.White,
                 BackColor = this.BackColor,
                 
-                MinimumSize = new Size(800, 325),
+                MinimumSize = new Size(725, 325),
                 Padding = new Padding(100)
             };
 
@@ -244,7 +244,7 @@ namespace AutoClickerApp
             {
                 FlowDirection = FlowDirection.TopDown,
                 WrapContents = false,
-                Size = new Size(760, 280),
+                Size = new Size(700, 280),
                 Location = new Point(10, 30),
                 Margin = new Padding(10),
                 BackColor = this.BackColor
