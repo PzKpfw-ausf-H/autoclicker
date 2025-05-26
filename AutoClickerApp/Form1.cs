@@ -1,12 +1,12 @@
-using WindowsInput;
+п»їusing WindowsInput;
 using WindowsInput.Native;
 
 namespace AutoClickerApp
 {
     public partial class Form1 : Form
     {
-        private List<Button> simulatedKeys = new List<Button>();    // создаем список для генерации клавиш
-        private List<string> selectedKeys = new List<string>();     // список для хранения выбранных пользователем клавиш
+        private List<Button> simulatedKeys = new List<Button>();    // СЃРѕР·РґР°РµРј СЃРїРёСЃРѕРє РґР»СЏ РіРµРЅРµСЂР°С†РёРё РєР»Р°РІРёС€
+        private List<string> selectedKeys = new List<string>();     // СЃРїРёСЃРѕРє РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІС‹Р±СЂР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј РєР»Р°РІРёС€
         private List<KeyBehavior> currentBehaviors = new List<KeyBehavior>();
 
 
@@ -18,8 +18,8 @@ namespace AutoClickerApp
 
         private List<KeyLayout> keyboardLayout = new List<KeyLayout>
         /*
-         keyboardLayout это список строк клавиатуры.
-        Каждая строка - массив клавиш + остступ слева, чтобы строки не начинались просто друг под другом
+         keyboardLayout СЌС‚Рѕ СЃРїРёСЃРѕРє СЃС‚СЂРѕРє РєР»Р°РІРёР°С‚СѓСЂС‹.
+        РљР°Р¶РґР°СЏ СЃС‚СЂРѕРєР° - РјР°СЃСЃРёРІ РєР»Р°РІРёС€ + РѕСЃС‚СЃС‚СѓРї СЃР»РµРІР°, С‡С‚РѕР±С‹ СЃС‚СЂРѕРєРё РЅРµ РЅР°С‡РёРЅР°Р»РёСЃСЊ РїСЂРѕСЃС‚Рѕ РґСЂСѓРі РїРѕРґ РґСЂСѓРіРѕРј
          */
         {
             new KeyLayout(new[] { "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace" }, xOffset: 0),
@@ -29,7 +29,7 @@ namespace AutoClickerApp
             new KeyLayout(new[] { "Ctrl", "Win", "Alt", "Space", "AltGr", "Fn", "Del" }, xOffset: 0),
         };
 
-        private Dictionary<string, int> specialWidths = new Dictionary<string, int>()   // Таблица, где указаны нестандартные размеры кнопок (спецклавиши)
+        private Dictionary<string, int> specialWidths = new Dictionary<string, int>()   // РўР°Р±Р»РёС†Р°, РіРґРµ СѓРєР°Р·Р°РЅС‹ РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ СЂР°Р·РјРµСЂС‹ РєРЅРѕРїРѕРє (СЃРїРµС†РєР»Р°РІРёС€Рё)
         {
             {"Tab", 60},
             {"Caps", 70},
@@ -54,7 +54,7 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод, который запускает автокликер по нажатии F6
+        /// РњРµС‚РѕРґ, РєРѕС‚РѕСЂС‹Р№ Р·Р°РїСѓСЃРєР°РµС‚ Р°РІС‚РѕРєР»РёРєРµСЂ РїРѕ РЅР°Р¶Р°С‚РёРё F6
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -67,9 +67,9 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод, описывающий разное поведение автокликера в зависимости от:
-        /// запущен кликер или нет;
-        /// способ кликания (одиночный, цикл или удержание)
+        /// РњРµС‚РѕРґ, РѕРїРёСЃС‹РІР°СЋС‰РёР№ СЂР°Р·РЅРѕРµ РїРѕРІРµРґРµРЅРёРµ Р°РІС‚РѕРєР»РёРєРµСЂР° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚:
+        /// Р·Р°РїСѓС‰РµРЅ РєР»РёРєРµСЂ РёР»Рё РЅРµС‚;
+        /// СЃРїРѕСЃРѕР± РєР»РёРєР°РЅРёСЏ (РѕРґРёРЅРѕС‡РЅС‹Р№, С†РёРєР» РёР»Рё СѓРґРµСЂР¶Р°РЅРёРµ)
         /// </summary>
         private void ToggleAutoclicker()
         {
@@ -78,12 +78,12 @@ namespace AutoClickerApp
             if (autoclickerRunning)
             {
                 autoclickerRunning = false;
-                MessageBox.Show("Автокликер остановлен");
+                MessageBox.Show("РђРІС‚РѕРєР»РёРєРµСЂ РѕСЃС‚Р°РЅРѕРІР»РµРЅ");
                 return;
             }
 
             autoclickerRunning = true;
-            MessageBox.Show("Автокликер запущен");
+            MessageBox.Show("РђРІС‚РѕРєР»РёРєРµСЂ Р·Р°РїСѓС‰РµРЅ");
 
             foreach(var behavior in currentBehaviors)
             {
@@ -91,11 +91,11 @@ namespace AutoClickerApp
                 string mode = behavior.Mode;
                 int interval = behavior.IntervalMs;
 
-                if (mode == "Одиночное")
+                if (mode == "РћРґРёРЅРѕС‡РЅРѕРµ")
                 {
                     SimulateKeyPress(key);
                 }
-                else if (mode == "Цикл")
+                else if (mode == "Р¦РёРєР»")
                 {
                     Task.Run(() =>
                     {
@@ -106,7 +106,7 @@ namespace AutoClickerApp
                         }
                     });
                 }
-                else if (mode == "Удержание")
+                else if (mode == "РЈРґРµСЂР¶Р°РЅРёРµ")
                 {
                     HoldKeyDown(key);
                 }
@@ -114,7 +114,7 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод, симулирующий один клик клавиши
+        /// РњРµС‚РѕРґ, СЃРёРјСѓР»РёСЂСѓСЋС‰РёР№ РѕРґРёРЅ РєР»РёРє РєР»Р°РІРёС€Рё
         /// </summary>
         /// <param name="key"></param>
         private void SimulateKeyPress(string key)
@@ -126,7 +126,7 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод, симулирующий удержание клавиши
+        /// РњРµС‚РѕРґ, СЃРёРјСѓР»РёСЂСѓСЋС‰РёР№ СѓРґРµСЂР¶Р°РЅРёРµ РєР»Р°РІРёС€Рё
         /// </summary>
         /// <param name="key"></param>
         private void HoldKeyDown(string key)
@@ -138,9 +138,9 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод для получения нажатой клавиши:
-        /// обычные клавиши обабатываются в Enum.TryPase...
-        /// специальные клавиши обрабатываются в switch-case
+        /// РњРµС‚РѕРґ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РЅР°Р¶Р°С‚РѕР№ РєР»Р°РІРёС€Рё:
+        /// РѕР±С‹С‡РЅС‹Рµ РєР»Р°РІРёС€Рё РѕР±Р°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РІ Enum.TryPase...
+        /// СЃРїРµС†РёР°Р»СЊРЅС‹Рµ РєР»Р°РІРёС€Рё РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РІ switch-case
         /// </summary>
         /// <param name="key"></param>
         /// <param name="code"></param>
@@ -181,7 +181,7 @@ namespace AutoClickerApp
                     int interval = 0;
 
                     var numeric = card.Controls.OfType<NumericUpDown>().FirstOrDefault();
-                    if (mode == "Цикл" && numeric != null)
+                    if (mode == "Р¦РёРєР»" && numeric != null)
                     {
                         interval = (int)numeric.Value;
                     }
@@ -197,7 +197,7 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Вспомогательный метод для создания небольшой инструкции сверху в главной страничке
+        /// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РјРµС‚РѕРґ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РЅРµР±РѕР»СЊС€РѕР№ РёРЅСЃС‚СЂСѓРєС†РёРё СЃРІРµСЂС…Сѓ РІ РіР»Р°РІРЅРѕР№ СЃС‚СЂР°РЅРёС‡РєРµ
         /// </summary>
         private void GenerateInstruction()
         {
@@ -213,10 +213,10 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод, создающий нативно понятную адаптивную разметку как для мыши, так и для клавиатуры
-        /// Для достижения адаптива все помещается в FlowLayoutPanel, которой задаются необходимые параметры вроде
-        /// AutoSize, Padding, Margin, WrapContents и прочие. Для достижения размещения горизонтально,
-        /// блоки мышки и клавиатуры были помещены в один контейнер
+        /// РњРµС‚РѕРґ, СЃРѕР·РґР°СЋС‰РёР№ РЅР°С‚РёРІРЅРѕ РїРѕРЅСЏС‚РЅСѓСЋ Р°РґР°РїС‚РёРІРЅСѓСЋ СЂР°Р·РјРµС‚РєСѓ РєР°Рє РґР»СЏ РјС‹С€Рё, С‚Р°Рє Рё РґР»СЏ РєР»Р°РІРёР°С‚СѓСЂС‹
+        /// Р”Р»СЏ РґРѕСЃС‚РёР¶РµРЅРёСЏ Р°РґР°РїС‚РёРІР° РІСЃРµ РїРѕРјРµС‰Р°РµС‚СЃСЏ РІ FlowLayoutPanel, РєРѕС‚РѕСЂРѕР№ Р·Р°РґР°СЋС‚СЃСЏ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ РІСЂРѕРґРµ
+        /// AutoSize, Padding, Margin, WrapContents Рё РїСЂРѕС‡РёРµ. Р”Р»СЏ РґРѕСЃС‚РёР¶РµРЅРёСЏ СЂР°Р·РјРµС‰РµРЅРёСЏ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕ,
+        /// Р±Р»РѕРєРё РјС‹С€РєРё Рё РєР»Р°РІРёР°С‚СѓСЂС‹ Р±С‹Р»Рё РїРѕРјРµС‰РµРЅС‹ РІ РѕРґРёРЅ РєРѕРЅС‚РµР№РЅРµСЂ
         /// </summary>
         private void GenerateKeyboardAndMouse()
         {
@@ -228,7 +228,7 @@ namespace AutoClickerApp
                 Location = new Point(0, 150)
             };
 
-            // === БЛОК КЛАВИАТУРЫ ===
+            // === Р‘Р›РћРљ РљР›РђР’РРђРўРЈР Р« ===
             GroupBox grpKeyboard = new GroupBox
             {
                 Text = "Keyboard",
@@ -288,7 +288,7 @@ namespace AutoClickerApp
             grpKeyboard.Controls.Add(keyboardPanel);
             horizontalPanel.Controls.Add(grpKeyboard);
 
-            // === БЛОК МЫШКИ ===
+            // === Р‘Р›РћРљ РњР«РЁРљР ===
             GroupBox grpMouse = new GroupBox
             {
                 Text = "Mouse",
@@ -332,7 +332,7 @@ namespace AutoClickerApp
 
             horizontalPanel.Controls.Add(grpMouse);
 
-            // === Добавляем весь блок ===
+            // === Р”РѕР±Р°РІР»СЏРµРј РІРµСЃСЊ Р±Р»РѕРє ===
             tabPage1.Controls.Add(horizontalPanel);
         }
 
@@ -358,20 +358,25 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод, создающий кнопку сохранения настроек для кнопок и описывающий эту самую логику сохранения настроек
+        /// РћР±СЉРµРґРёРЅРµРЅРЅС‹Р№ РјРµС‚РѕРґ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РєРЅРѕРїРѕРє "РЎР±СЂРѕСЃРёС‚СЊ" Рё "РџСЂРёРјРµРЅРёС‚СЊ"
         /// </summary>
-        private void GenerateApplyButton()
+        private void GenerateApplyAndResetButtons()
         {
-            Button applyButton = new Button();
-            applyButton.Text = "Применить";
-            applyButton.ForeColor = Color.Black;
-            applyButton.BackColor = Color.White;
-            applyButton.Size = new Size(120, 30);
-            applyButton.Location = new Point(10, flpKeySettings.Height - 40);
-            applyButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            Panel bottomButtonsPanel = new Panel
+            {
+                Size = new Size(700, 60),
+                Dock = DockStyle.Bottom
+            };
 
-            flpKeySettings.Controls.Add(applyButton);
-
+            Button applyButton = new Button
+            {
+                Text = "Apply",
+                Size = new Size(120, 45),
+                Location = new Point(10, 5),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                ForeColor = Color.Black,
+                BackColor = Color.White
+            };
             applyButton.Click += (s, e) =>
             {
                 currentBehaviors.Clear();
@@ -385,7 +390,7 @@ namespace AutoClickerApp
                         int interval = 0;
 
                         var numeric = card.Controls.OfType<NumericUpDown>().FirstOrDefault();
-                        if (mode == "Цикл" && numeric != null)
+                        if (mode == "Р¦РёРєР»" && numeric != null)
                         {
                             interval = (int)numeric.Value;
                         }
@@ -397,46 +402,40 @@ namespace AutoClickerApp
                         });
                     }
                 }
-
-                MessageBox.Show("Настройки сохранены", "Применено", MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
-        }
 
-        /// <summary>
-        /// Метод для удаления всех кнопок со второй страницы
-        /// </summary>
-        private void GenerateResetAllButton()
-        {
-            Button resetAllButton = new Button();
-            resetAllButton.Text = "Сбросить все";
-            resetAllButton.Size = new Size(120, 30);
-            resetAllButton.ForeColor = Color.Black;
-            resetAllButton.BackColor = Color.White;
-            resetAllButton.Location = new Point(flpKeySettings.Width - 140, flpKeySettings.Height - 40);
-            resetAllButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right; 
 
-            flpKeySettings.Controls.Add(resetAllButton);
-
-            resetAllButton.Click += (s, e) =>
-            {
-                //удаляем карточки
-                flpKeySettings.Controls.Clear();
-
-                //сбрасываем выделения кнопок
-                foreach (var btn in simulatedKeys)
+                Button resetButton = new Button
                 {
-                    btn.BackColor = Color.White;
-                }
+                    Text = "Reset all",
+                    Size = new Size(120, 45),
+                    Location = new Point(570, 5),
+                    Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                    ForeColor = Color.Black,
+                    BackColor = Color.White
+                };
+                resetButton.Click += (s, e) =>
+                {
+                    flpKeySettings.Controls.Clear();
 
-                selectedKeys.Clear();
+                    foreach (var btn in simulatedKeys)
+                    {
+                        btn.BackColor = Color.White;
+                    }
 
-                behaviorPageInitialized = false;
-            };
+                    selectedKeys.Clear();
+
+                    behaviorPageInitialized = false;
+                };
+
+                bottomButtonsPanel.Controls.Add(applyButton);
+                bottomButtonsPanel.Controls.Add(resetButton);
+                tabPage2.Controls.Add(bottomButtonsPanel);
         }
 
 
         /// <summary>
-        /// метод-обработчик, запускается когда форма создается и начинает загружаться, но еще не видна пользователю
+        /// РјРµС‚РѕРґ-РѕР±СЂР°Р±РѕС‚С‡РёРє, Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ РєРѕРіРґР° С„РѕСЂРјР° СЃРѕР·РґР°РµС‚СЃСЏ Рё РЅР°С‡РёРЅР°РµС‚ Р·Р°РіСЂСѓР¶Р°С‚СЊСЃСЏ, РЅРѕ РµС‰Рµ РЅРµ РІРёРґРЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -447,9 +446,9 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод-обработчик для нажатий кнопок. Отлавливает клавиши как sender и приводит их к Button
+        /// РњРµС‚РѕРґ-РѕР±СЂР°Р±РѕС‚С‡РёРє РґР»СЏ РЅР°Р¶Р°С‚РёР№ РєРЅРѕРїРѕРє. РћС‚Р»Р°РІР»РёРІР°РµС‚ РєР»Р°РІРёС€Рё РєР°Рє sender Рё РїСЂРёРІРѕРґРёС‚ РёС… Рє Button
         /// </summary>
-        /// <param name="sender">Тот, кто "отослал" сигнал, конкретная кнопка или клавиша</param>
+        /// <param name="sender">РўРѕС‚, РєС‚Рѕ "РѕС‚РѕСЃР»Р°Р»" СЃРёРіРЅР°Р», РєРѕРЅРєСЂРµС‚РЅР°СЏ РєРЅРѕРїРєР° РёР»Рё РєР»Р°РІРёС€Р°</param>
         /// <param name="e"></param>
         private void KeyButton_Click(object sender, EventArgs e)
         {
@@ -473,9 +472,9 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод для создания карточек для каждой клавиши с индивидуальынми настройками
-        /// Имеется логика удаления кнопок из списка
-        /// Также имеется логика появления интервала только при выбранном режиме "интервал"
+        /// РњРµС‚РѕРґ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РєР°СЂС‚РѕС‡РµРє РґР»СЏ РєР°Р¶РґРѕР№ РєР»Р°РІРёС€Рё СЃ РёРЅРґРёРІРёРґСѓР°Р»СЊС‹РЅРјРё РЅР°СЃС‚СЂРѕР№РєР°РјРё
+        /// РРјРµРµС‚СЃСЏ Р»РѕРіРёРєР° СѓРґР°Р»РµРЅРёСЏ РєРЅРѕРїРѕРє РёР· СЃРїРёСЃРєР°
+        /// РўР°РєР¶Рµ РёРјРµРµС‚СЃСЏ Р»РѕРіРёРєР° РїРѕСЏРІР»РµРЅРёСЏ РёРЅС‚РµСЂРІР°Р»Р° С‚РѕР»СЊРєРѕ РїСЂРё РІС‹Р±СЂР°РЅРЅРѕРј СЂРµР¶РёРјРµ "РёРЅС‚РµСЂРІР°Р»"
         /// </summary>
         /// <param name="keyName"></param>
         private void CreateKeySettingCard(string keyName)
@@ -496,40 +495,43 @@ namespace AutoClickerApp
             keyButton.Font = new Font("Segoe UI", 12, FontStyle.Bold);
             keyButton.Location = new Point(10, 10);
 
-            //Комбо-бокс с выбором поведения для каждой клавиши
+            //РљРѕРјР±Рѕ-Р±РѕРєСЃ СЃ РІС‹Р±РѕСЂРѕРј РїРѕРІРµРґРµРЅРёСЏ РґР»СЏ РєР°Р¶РґРѕР№ РєР»Р°РІРёС€Рё
             ComboBox behaviorBox = new ComboBox();
-            behaviorBox.Items.AddRange(new[] { "Одиночное", "Цикл", "Удержание" });
+            behaviorBox.Items.AddRange(new[] { "РћРґРёРЅРѕС‡РЅРѕРµ", "Р¦РёРєР»", "РЈРґРµСЂР¶Р°РЅРёРµ" });
             behaviorBox.SelectedIndex = 0;
             behaviorBox.DropDownStyle = ComboBoxStyle.DropDownList;
             behaviorBox.Location = new Point(90, 18);
             behaviorBox.Width = 120;
 
-            //Поле для интервала
+            //РџРѕР»Рµ РґР»СЏ РёРЅС‚РµСЂРІР°Р»Р°
             NumericUpDown intervalBox = new NumericUpDown();
             intervalBox.Minimum = 1;
             intervalBox.Maximum = 10000;
             intervalBox.Value = 1000;
             intervalBox.Location = new Point(220, 18);
             intervalBox.Width = 80;
-            intervalBox.Visible = false; //скрыт по умолчанию
+            intervalBox.Visible = false; //СЃРєСЂС‹С‚ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 
-            // подпись "мс"
+            // РїРѕРґРїРёСЃСЊ "РјСЃ"
             Label msLabel = new Label();
-            msLabel.Text = "мс";
+            msLabel.Text = "РјСЃ";
             msLabel.Location = new Point(305, 21);
             msLabel.Width = 30;
             msLabel.Visible = false;
 
-            //Кнопка для удаления клавиши из списка
+            //РљРЅРѕРїРєР° РґР»СЏ СѓРґР°Р»РµРЅРёСЏ РєР»Р°РІРёС€Рё РёР· СЃРїРёСЃРєР°
             Button removeButton = new Button();
-            removeButton.Text = "Удалить";
-            removeButton.Location = new Point(350, 17);
-            removeButton.Width = 80;
+            removeButton.Text = "РЈРґР°Р»РёС‚СЊ";
+            removeButton.Location = new Point(500, 6);
+            removeButton.Size = new Size(90, 45);
+            removeButton.ForeColor = Color.Black;
+            removeButton.BackColor = Color.White;
 
-            //Логика отображения интервала только для режима "цикл"
+
+            //Р›РѕРіРёРєР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РёРЅС‚РµСЂРІР°Р»Р° С‚РѕР»СЊРєРѕ РґР»СЏ СЂРµР¶РёРјР° "С†РёРєР»"
             behaviorBox.SelectedIndexChanged += (s, e) =>
             {
-                bool showInteval = behaviorBox.SelectedItem.ToString() == "Цикл";
+                bool showInteval = behaviorBox.SelectedItem.ToString() == "Р¦РёРєР»";
                 intervalBox.Visible = showInteval;
                 msLabel.Visible = showInteval;
             };
@@ -546,7 +548,7 @@ namespace AutoClickerApp
                 }
             };
 
-            //Запихиваем все в карточку
+            //Р—Р°РїРёС…РёРІР°РµРј РІСЃРµ РІ РєР°СЂС‚РѕС‡РєСѓ
             card.Controls.Add(keyButton);
             card.Controls.Add(behaviorBox);
             card.Controls.Add(intervalBox);
@@ -557,7 +559,7 @@ namespace AutoClickerApp
         }
 
         /// <summary>
-        /// Метод-обработчик перехода с одной страницы на другую
+        /// РњРµС‚РѕРґ-РѕР±СЂР°Р±РѕС‚С‡РёРє РїРµСЂРµС…РѕРґР° СЃ РѕРґРЅРѕР№ СЃС‚СЂР°РЅРёС†С‹ РЅР° РґСЂСѓРіСѓСЋ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -569,16 +571,15 @@ namespace AutoClickerApp
                 {
                     CreateKeySettingCard(key);
                 }
-                GenerateResetAllButton();
-                GenerateApplyButton();
+                GenerateApplyAndResetButtons();
                 behaviorPageInitialized = true;
             }
         }
     }
 
     /// <summary>
-    /// Вспомогательный класс, чтобы удобно описывать целую строку клавиатуры
-    /// Помогает хранить и перебирать строки клавиатуры прямо со сдвигами НЕ вручную
+    /// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РєР»Р°СЃСЃ, С‡С‚РѕР±С‹ СѓРґРѕР±РЅРѕ РѕРїРёСЃС‹РІР°С‚СЊ С†РµР»СѓСЋ СЃС‚СЂРѕРєСѓ РєР»Р°РІРёР°С‚СѓСЂС‹
+    /// РџРѕРјРѕРіР°РµС‚ С…СЂР°РЅРёС‚СЊ Рё РїРµСЂРµР±РёСЂР°С‚СЊ СЃС‚СЂРѕРєРё РєР»Р°РІРёР°С‚СѓСЂС‹ РїСЂСЏРјРѕ СЃРѕ СЃРґРІРёРіР°РјРё РќР• РІСЂСѓС‡РЅСѓСЋ
     /// </summary>
     public class KeyLayout
     {
