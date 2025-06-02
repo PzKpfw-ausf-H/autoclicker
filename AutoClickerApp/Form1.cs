@@ -83,12 +83,27 @@ namespace AutoClickerApp
             if (autoclickerRunning)
             {
                 autoclickerRunning = false;
-                //MessageBox.Show("Автокликер остановлен");
+                foreach (var behavior in currentBehaviors)
+                {
+                    if (behavior.Mode == "Удеражние")
+                    {
+                        string key = behavior.KeyName;
+
+                        if(IsMouseButton(key))
+                        {
+                            ReleaseMouse(key);
+                        }
+
+                        else if (TryGetScanCode(behavior.KeyName, out ushort scanCode))
+                        {
+                            SendKeyUp(scanCode);
+                        }
+                    }
+                }
                 return;
             }
 
             autoclickerRunning = true;
-            //MessageBox.Show("Автокликер запущен");
 
             foreach(var behavior in currentBehaviors)
             {
@@ -98,7 +113,13 @@ namespace AutoClickerApp
 
                 if (mode == "Одиночное")
                 {
-                    SimulateKeyPress(key);
+                    if (IsMouseButton(key))
+                    {
+                        SimulateMouseClick(key);
+                    } else
+                    {
+                        SimulateKeyPress(key);
+                    }
                 }
                 else if (mode == "Цикл")
                 {
@@ -106,14 +127,28 @@ namespace AutoClickerApp
                     {
                         while (autoclickerRunning)
                         {
-                            SimulateKeyPress(key);
+                            if (IsMouseButton(key))
+                            {
+                                SimulateMouseClick(key);
+                            }
+                            else
+                            {
+                                SimulateKeyPress(key);
+                            }
+
                             Thread.Sleep(interval);
                         }
                     });
                 }
                 else if (mode == "Удержание")
                 {
-                    HoldKeyDown(key);
+                    if (IsMouseButton(key))
+                    {
+                        HoldMouseDown(key);
+                    } else 
+                    {
+                        HoldKeyDown(key);
+                    }
                 }
             }
         }
@@ -164,6 +199,103 @@ namespace AutoClickerApp
             NativeMethods.SendInput(1, new[] { input }, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
         }
 
+        //--------Логика для симуляции нажатия мышки--------
+
+        private bool IsMouseButton(string key)
+        {
+            string upperKey = key.ToUpper();
+            return upperKey == "LMB" || upperKey == "RMB" || upperKey == "MMB" || upperKey == "X1" || upperKey == "X2";
+        }
+
+
+        private void SimulateMouseClick(string mouseButton)
+        {
+            uint downFlag = 0;
+            uint upFlag = 0;
+
+            switch(mouseButton.ToUpper())
+            {
+                case "LMB":
+                    downFlag = NativeMethods.MOUSEEVENTF_LEFTDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_LEFTUP;
+                    break;
+                case "RMB":
+                    downFlag = NativeMethods.MOUSEEVENTF_RIGHTDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_RIGHTUP;
+                    break;
+                case "MMB":
+                    downFlag = NativeMethods.MOUSEEVENTF_MIDDLEDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_MIDDLEUP;
+                    break;
+                case "X1":
+                    downFlag = NativeMethods.MOUSEEVENTF_XDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_XUP;
+                    break;
+                case "X2":
+                    downFlag = NativeMethods.MOUSEEVENTF_XDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_XUP;
+                    break;
+                default:
+                    return;
+            }
+
+            if (mouseButton.ToUpper() == "X1")
+            {
+                SendMouseClick(downFlag, upFlag, NativeMethods.XBUTTON1);
+            } else if (mouseButton.ToUpper() == "X2")
+            {
+                SendMouseClick(downFlag, upFlag, NativeMethods.XBUTTON2);
+            } else
+            {
+                SendMouseClick(downFlag, upFlag);
+            }
+        }
+
+        private void HoldMouseDown(string mouseButton)
+        {
+            GetMouseFlags(mouseButton, out uint downFlag, out _);
+            SendMouseClick(downFlag, 0);  // только нажатие
+        }
+
+        private void ReleaseMouse(string mouseButton)
+        {
+            GetMouseFlags(mouseButton, out _, out uint upFlag);
+            SendMouseClick(0, upFlag);  // только отпускание
+        }
+
+        private void GetMouseFlags(string mouseButton, out uint downFlag, out uint upFlag)
+        {
+            downFlag = 0;
+            upFlag = 0;
+
+            switch (mouseButton.ToUpper())
+            {
+                case "LMB":
+                    downFlag = NativeMethods.MOUSEEVENTF_LEFTDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_LEFTUP;
+                    break;
+                case "RMB":
+                    downFlag = NativeMethods.MOUSEEVENTF_RIGHTDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_RIGHTUP;
+                    break;
+                case "MMB":
+                    downFlag = NativeMethods.MOUSEEVENTF_MIDDLEDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_MIDDLEUP;
+                    break;
+                case "X1":
+                    downFlag = NativeMethods.MOUSEEVENTF_XDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_XUP;
+                    break;
+                case "X2":
+                    downFlag = NativeMethods.MOUSEEVENTF_XDOWN;
+                    upFlag = NativeMethods.MOUSEEVENTF_XUP;
+                    break;
+            }
+        }
+
+
+        // -------Конец блока логики для мышки-----------
+
         private void SendKeyUp(ushort scanCode)
         {
             var input = new NativeMethods.INPUT
@@ -183,6 +315,37 @@ namespace AutoClickerApp
             };
 
             NativeMethods.SendInput(1, new[] { input }, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+        }
+
+        private void SendMouseClick(uint downFlag, uint upFlag, uint mouseData = 0)
+        {
+            var inputs = new[]
+            {
+                new NativeMethods.INPUT
+                {
+                    type = NativeMethods.INPUT_MOUSE,
+                    u = new NativeMethods.InputUnion
+                    {
+                        mi = new NativeMethods.MOUSEINPUT
+                        {
+                            dwFlags = downFlag
+                        }
+                    }
+                }
+            };
+            new NativeMethods.INPUT
+            {
+                type = NativeMethods.INPUT_MOUSE,
+                u = new NativeMethods.InputUnion
+                {
+                    mi = new NativeMethods.MOUSEINPUT
+                    {
+                        dwFlags = upFlag
+                    }
+                }
+            };
+
+            NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
         }
 
         /// <summary>
@@ -206,6 +369,34 @@ namespace AutoClickerApp
                 ["D"] = 0x20,
                 ["SPACE"] = 0x39,
                 ["SHIFT"] = 0x2A,
+                ["CTRL"] = 0x1D,
+                ["ALT"] = 0x38,
+                ["TAB"] = 0x0F,
+                ["ESC"] = 0x01,
+                ["ENTER"] = 0x1C,
+                ["BACKSPACE"] = 0x0E,
+                ["CAPSLOCK"] = 0x3A,
+                ["Q"] = 0x10,
+                ["E"] = 0x12,
+                ["R"] = 0x13,
+                ["F"] = 0x21,
+                ["Z"] = 0x2C,
+                ["X"] = 0x2D,
+                ["C"] = 0x2E,
+                ["V"] = 0x2F,
+                ["B"] = 0x30,
+                ["1"] = 0x02,
+                ["2"] = 0x03,
+                ["3"] = 0x04,
+                ["4"] = 0x05,
+                ["5"] = 0x06,
+                ["6"] = 0x07,
+                ["7"] = 0x08,
+                ["8"] = 0x09,
+                ["9"] = 0x0A,
+                ["0"] = 0x0B,
+                ["-"] = 0x0C,
+                ["="] = 0x0D
             };
 
             if (scanMapping.TryGetValue(key, out scan))
