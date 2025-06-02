@@ -454,7 +454,7 @@ namespace AutoClickerApp
             Label instructionLabel = new Label();
             instructionLabel.Text = "Pick one or more keys you want to simulate";
             instructionLabel.Location = new Point(startX, startY);
-            instructionLabel.Size = new Size(800, 30);
+            instructionLabel.Size = new Size(800, 50);
             instructionLabel.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             instructionLabel.ForeColor = Color.White;
             tabPage1.Controls.Add(instructionLabel);
