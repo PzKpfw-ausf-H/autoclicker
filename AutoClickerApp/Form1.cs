@@ -1,10 +1,11 @@
-﻿using WindowsInput;
-using WindowsInput.Native;
+﻿using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace AutoClickerApp
 {
     public partial class Form1 : Form
     {
+        
         private List<Button> simulatedKeys = new List<Button>();    // создаем список для генерации клавиш
         private List<string> selectedKeys = new List<string>();     // список для хранения выбранных пользователем клавиш
         private List<KeyBehavior> currentBehaviors = new List<KeyBehavior>();
@@ -12,15 +13,19 @@ namespace AutoClickerApp
 
         private bool behaviorPageInitialized = false;
 
-        private InputSimulator inputSimulator = new InputSimulator();
+        private Panel bottomButtonsPanel = null;
 
         private bool autoclickerRunning = false;
 
         private List<KeyLayout> keyboardLayout = new List<KeyLayout>
+        
+
         /*
          keyboardLayout это список строк клавиатуры.
         Каждая строка - массив клавиш + остступ слева, чтобы строки не начинались просто друг под другом
          */
+
+        
         {
             new KeyLayout(new[] { "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace" }, xOffset: 0),
             new KeyLayout(new[] { "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\" }, xOffset: 10),
@@ -78,12 +83,12 @@ namespace AutoClickerApp
             if (autoclickerRunning)
             {
                 autoclickerRunning = false;
-                MessageBox.Show("Автокликер остановлен");
+                //MessageBox.Show("Автокликер остановлен");
                 return;
             }
 
             autoclickerRunning = true;
-            MessageBox.Show("Автокликер запущен");
+            //MessageBox.Show("Автокликер запущен");
 
             foreach(var behavior in currentBehaviors)
             {
@@ -119,9 +124,10 @@ namespace AutoClickerApp
         /// <param name="key"></param>
         private void SimulateKeyPress(string key)
         {
-            if (TryGetVirtualKey(key, out VirtualKeyCode code))
+            if (TryGetVirtualKey(key, out ushort vk))
             {
-                inputSimulator.Keyboard.KeyPress(code);
+                SendKeyDown(vk);
+                SendKeyUp(vk);
             }
         }
 
@@ -131,10 +137,46 @@ namespace AutoClickerApp
         /// <param name="key"></param>
         private void HoldKeyDown(string key)
         {
-            if (TryGetVirtualKey(key, out VirtualKeyCode code))
+            if (TryGetVirtualKey(key, out ushort vk))
             {
-                inputSimulator.Keyboard.KeyDown(code);
+                SendKeyDown(vk);
             }
+        }
+
+        private void SendKeyDown(ushort vk)
+        {
+            var input = new NativeMethods.INPUT
+            {
+                type = NativeMethods.INPUT_KEYBOARD,
+                u = new NativeMethods.InputUnion
+                {
+                    ki = new NativeMethods.KEYBDINPUT
+                    {
+                        wVk = vk,
+                        dwFlags = 0
+                    }
+                }
+            };
+
+            NativeMethods.SendInput(1, new[] {input}, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+        }
+
+        private void SendKeyUp(ushort vk)
+        {
+            var input = new NativeMethods.INPUT
+            {
+                type = NativeMethods.INPUT_KEYBOARD,
+                u = new NativeMethods.InputUnion
+                {
+                    ki = new NativeMethods.KEYBDINPUT
+                    {
+                        wVk = vk,
+                        dwFlags = NativeMethods.KEYEVENTF_KEYUP
+                    }
+                }
+            };
+
+            NativeMethods.SendInput(1, new[] {input}, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
         }
 
         /// <summary>
@@ -145,27 +187,40 @@ namespace AutoClickerApp
         /// <param name="key"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        private bool TryGetVirtualKey(string key, out VirtualKeyCode code)
+        private bool TryGetVirtualKey(string key, out ushort vk)
         {
+            vk = 0;
             key = key.ToUpper();
 
-            if (Enum.TryParse("VK_" + key, out code)) return true;
-
-            switch (key)
+            Dictionary<string, ushort> mapping = new Dictionary<string, ushort>
             {
-                case "LMB": code = VirtualKeyCode.LBUTTON; return true;
-                case "RMB": code = VirtualKeyCode.RBUTTON; return true;
-                case "MMB": code = VirtualKeyCode.MBUTTON; return true;
-                case "SPACE": code = VirtualKeyCode.SPACE; return true;
-                case "ENTER": code = VirtualKeyCode.RETURN; return true;
-                case "SHIFT": code = VirtualKeyCode.SHIFT; return true;
-                case "CTRL": code = VirtualKeyCode.CONTROL; return true;
-                case "TAB": code = VirtualKeyCode.TAB; return true;
-                case "BACKSPACE": code = VirtualKeyCode.BACK; return true;
-                case "CAPS": code = VirtualKeyCode.CAPITAL; return true;
+                ["ENTER"] = 0x0D,
+                ["TAB"] = 0x09,
+                ["SPACE"] = 0x20,
+                ["SHIFT"] = 0x10,
+                ["CTRL"] = 0x11,
+                ["ALT"] = 0x12,
+                ["BACKSPACE"] = 0x08,
+                ["CAPS"] = 0x14,
+                ["ESC"] = 0x1B,
+                ["LMB"] = 0x01, // Mouse — не будем использовать в SendInput клавиатурой
+                ["RMB"] = 0x02,
+                ["MMB"] = 0x04,
+            };
 
-                default: code = 0; return false;
+            if (mapping.ContainsKey(key))
+            {
+                vk = mapping[key];
+                return true;
             }
+
+            if (key.Length == 1)
+            {
+                vk = (ushort)key[0]; //сиволы от A-Z, 0-9
+                return true;
+            }
+
+            return false;
         }
 
         private void UpdateCurrentBehaviors()
@@ -194,6 +249,15 @@ namespace AutoClickerApp
                     });
                 }
             }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
+            {
+                ToggleAutoclicker();
+            }
+            base.WndProc(ref m);
         }
 
         /// <summary>
@@ -362,10 +426,17 @@ namespace AutoClickerApp
         /// </summary>
         private void GenerateApplyAndResetButtons()
         {
-            Panel bottomButtonsPanel = new Panel
+            if (bottomButtonsPanel != null)
+            {
+                return;
+            }
+
+
+            bottomButtonsPanel = new Panel
             {
                 Size = new Size(700, 60),
-                Dock = DockStyle.Bottom
+                Dock = DockStyle.Bottom,
+                Name = "BottomButtonsPanel"
             };
 
             Button applyButton = new Button
@@ -403,34 +474,32 @@ namespace AutoClickerApp
                     }
                 }
             };
+            Button resetButton = new Button
+            {
+                Text = "Reset all",
+                Size = new Size(120, 45),
+                Location = new Point(570, 5),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                ForeColor = Color.Black,
+                BackColor = Color.White
+            };
+            resetButton.Click += (s, e) =>
+            {
+                flpKeySettings.Controls.Clear();
 
-
-                Button resetButton = new Button
+                foreach (var btn in simulatedKeys)
                 {
-                    Text = "Reset all",
-                    Size = new Size(120, 45),
-                    Location = new Point(570, 5),
-                    Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                    ForeColor = Color.Black,
-                    BackColor = Color.White
-                };
-                resetButton.Click += (s, e) =>
-                {
-                    flpKeySettings.Controls.Clear();
+                    btn.BackColor = Color.White;
+                }
 
-                    foreach (var btn in simulatedKeys)
-                    {
-                        btn.BackColor = Color.White;
-                    }
+                selectedKeys.Clear();
 
-                    selectedKeys.Clear();
+                behaviorPageInitialized = false;
+            };
 
-                    behaviorPageInitialized = false;
-                };
-
-                bottomButtonsPanel.Controls.Add(applyButton);
-                bottomButtonsPanel.Controls.Add(resetButton);
-                tabPage2.Controls.Add(bottomButtonsPanel);
+            bottomButtonsPanel.Controls.Add(applyButton);
+            bottomButtonsPanel.Controls.Add(resetButton);
+            tabPage2.Controls.Add(bottomButtonsPanel);
         }
 
 
@@ -443,6 +512,8 @@ namespace AutoClickerApp
         {
             GenerateKeyboardAndMouse();
             GenerateInstruction();
+
+            RegisterHotKey(this.Handle, HOTKEY_ID, MOD_NONE, (uint)Keys.F6);
         }
 
         /// <summary>
@@ -575,6 +646,19 @@ namespace AutoClickerApp
                 behaviorPageInitialized = true;
             }
         }
+
+        [DllImport("user32.dll")]
+        public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll")]
+        public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+        private const int HOTKEY_ID = 9000;
+        private const uint MOD_NONE = 0x0000;
+        private const int WM_HOTKEY = 0x0312;
+        
+
+
     }
 
     /// <summary>
@@ -606,4 +690,6 @@ namespace AutoClickerApp
         public string Mode { get; set; }
         public int IntervalMs { get; set; }
     }
+        
+
 }
